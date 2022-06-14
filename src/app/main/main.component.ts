@@ -160,10 +160,11 @@ export class MainComponent implements OnInit, OnDestroy {
     this.balance = await this.token!.balance(this.account);
 
     this.amount.clearValidators();
-    if (this.token?.decimals == 18)
-      this.amount.addValidators([Validators.required, Validators.min(utils.formatUnits("1", 18) as any), Validators.max(utils.formatEther(this.balance) as any)])
-    else
-      this.amount.addValidators([Validators.required, Validators.min(utils.formatUnits("1", 18) as any), Validators.max(utils.formatUnits(this.balance, this.token?.decimals) as any)])
+    this.amount.addValidators([
+      Validators.required,
+      Validators.min(utils.formatUnits("1", this.token!.decimals) as any),
+      Validators.max(utils.formatUnits(this.balance, this.token!.decimals) as any)
+    ]);
 
     this.amount.updateValueAndValidity();
     this.address.updateValueAndValidity();
@@ -220,11 +221,7 @@ export class MainComponent implements OnInit, OnDestroy {
     const token = this.token!;
     const chain = this.chain!;
 
-    var amount = "";
-    if (token.decimals == 18)
-      amount = utils.parseEther(this.amount.value.toString()).toString();
-    else
-      amount = BigInt(this.amount.value * Math.pow(10, token.decimals)).toString();
+    var amount = utils.parseUnits(this.amount.value, token.decimals).toString();
 
     const callData = token.destination == 'Strax' ?
       token.burnCall(amount, this.address.value) :
